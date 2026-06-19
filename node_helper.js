@@ -2,7 +2,7 @@ var NodeHelper = require("node_helper");
 var Log = require("logger");
 var http = require("http");
 var https = require("https");
-var URL = require("url").URL;
+var url = require("url");
 
 module.exports = NodeHelper.create({
   start: function () {
@@ -12,7 +12,7 @@ module.exports = NodeHelper.create({
 
   socketNotificationReceived: function (notification, payload) {
     if (notification === "HORMUZ_CONFIG") {
-      this.config = Object.assign({}, payload);
+      this.config = this.cloneConfig(payload);
       this.fetchStatus();
     }
 
@@ -41,12 +41,11 @@ module.exports = NodeHelper.create({
         parsed.sourceUrl = self.config.sourceUrl || "https://hormuzstraitmonitor.com/";
         parsed.updatedAt = new Date().toISOString();
         self.sendSocketNotification("HORMUZ_DATA", parsed);
+        self.isFetching = false;
       })
       .catch(function (error) {
         Log.error("MMM-HormuzBanner: " + error.message);
         self.sendError(error.message);
-      })
-      .finally(function () {
         self.isFetching = false;
       });
   },
@@ -59,15 +58,23 @@ module.exports = NodeHelper.create({
       var parsedUrl;
 
       try {
-        parsedUrl = new URL(sourceUrl);
+        parsedUrl = url.parse(sourceUrl);
       } catch (error) {
         reject(new Error("Invalid Hormuz source URL"));
         return;
       }
 
+      if (!parsedUrl.protocol || !parsedUrl.hostname) {
+        reject(new Error("Invalid Hormuz source URL"));
+        return;
+      }
+
       var client = parsedUrl.protocol === "http:" ? http : https;
-      var request = client.get(parsedUrl, {
-        timeout: 15000,
+      var request = client.get({
+        protocol: parsedUrl.protocol,
+        hostname: parsedUrl.hostname,
+        port: parsedUrl.port,
+        path: parsedUrl.path,
         headers: {
           "User-Agent": "MMM-HormuzBanner/1.0 (+https://magicmirror.builders/)",
           "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
@@ -83,7 +90,7 @@ module.exports = NodeHelper.create({
             return;
           }
 
-          resolve(self.fetchText(new URL(response.headers.location, parsedUrl).toString(), redirects + 1));
+          resolve(self.fetchText(url.resolve(sourceUrl, response.headers.location), redirects + 1));
           return;
         }
 
@@ -101,11 +108,27 @@ module.exports = NodeHelper.create({
         });
       });
 
-      request.on("timeout", function () {
-        request.destroy(new Error("Hormuz source request timed out"));
+      request.setTimeout(15000, function () {
+        request.abort();
+        reject(new Error("Hormuz source request timed out"));
       });
       request.on("error", reject);
     });
+  },
+
+  cloneConfig: function (payload) {
+    var config = {};
+    var key;
+
+    payload = payload || {};
+
+    for (key in payload) {
+      if (Object.prototype.hasOwnProperty.call(payload, key)) {
+        config[key] = payload[key];
+      }
+    }
+
+    return config;
   },
 
   parsePage: function (html) {
