@@ -11,8 +11,9 @@ module.exports = NodeHelper.create({
   },
 
   socketNotificationReceived: function (notification, payload) {
-    if (notification === "HORMUZ_CONFIG") {
+    if (notification === "HORMUZ_CONFIG" || notification === "HORMUZ_STATUS_CONFIG") {
       this.config = this.cloneConfig(payload);
+      this.notificationPrefix = notification === "HORMUZ_STATUS_CONFIG" ? "HORMUZ_STATUS" : "HORMUZ";
 
       if (this.config.fetchEnabled === false) {
         return;
@@ -21,7 +22,8 @@ module.exports = NodeHelper.create({
       this.fetchStatus();
     }
 
-    if (notification === "HORMUZ_REFRESH") {
+    if (notification === "HORMUZ_REFRESH" || notification === "HORMUZ_STATUS_REFRESH") {
+      this.notificationPrefix = notification === "HORMUZ_STATUS_REFRESH" ? "HORMUZ_STATUS" : "HORMUZ";
       this.fetchStatus();
     }
   },
@@ -45,7 +47,7 @@ module.exports = NodeHelper.create({
         var parsed = self.parsePage(html);
         parsed.sourceUrl = self.config.sourceUrl || "https://hormuzstraitmonitor.com/";
         parsed.updatedAt = new Date().toISOString();
-        self.sendSocketNotification("HORMUZ_DATA", parsed);
+        self.sendSocketNotification(self.getNotificationName("DATA"), parsed);
         self.isFetching = false;
       })
       .catch(function (error) {
@@ -216,8 +218,12 @@ module.exports = NodeHelper.create({
   },
 
   sendError: function (message) {
-    this.sendSocketNotification("HORMUZ_ERROR", {
+    this.sendSocketNotification(this.getNotificationName("ERROR"), {
       message: message || "unavailable"
     });
+  },
+
+  getNotificationName: function (suffix) {
+    return (this.notificationPrefix || "HORMUZ") + "_" + suffix;
   }
 });

@@ -1,4 +1,4 @@
-# MMM-HormuzBanner
+# MMM-HormuzStatus
 
 Compact MagicMirror module for Strait of Hormuz shipping status from [hormuzstraitmonitor.com](https://hormuzstraitmonitor.com/).
 
@@ -13,17 +13,17 @@ Waiting        Unknown
 
 ## Installation
 
-Install under your MagicMirror modules directory:
+Install under your MagicMirror modules directory.
 
 ```bash
 cd ~/MagicMirror/modules
-git clone <your-repo-url> MMM-HormuzBanner
+git clone https://github.com/kryzbell2/MMM-HormuzBanner.git MMM-HormuzStatus
 ```
 
-Or copy this folder directly to:
+The repository name is still `MMM-HormuzBanner`, but clone it into a folder named `MMM-HormuzStatus` to use the clean widget module entry point.
 
 ```text
-~/MagicMirror/modules/MMM-HormuzBanner
+~/MagicMirror/modules/MMM-HormuzStatus
 ```
 
 No browser-side fetches are used. The page is fetched by `node_helper.js`, parsed server-side, and sent to the module with socket notifications.
@@ -34,7 +34,7 @@ Add the module to `config/config.js`:
 
 ```js
 {
-  module: "MMM-HormuzBanner",
+  module: "MMM-HormuzStatus",
   position: "top_right",
   config: {
     sourceUrl: "https://hormuzstraitmonitor.com/",
@@ -85,7 +85,7 @@ Errors are also logged by MagicMirror.
 From the module directory:
 
 ```bash
-node --check MMM-HormuzBanner.js
+node --check MMM-HormuzStatus.js
 node --check node_helper.js
 git diff --check
 ```
