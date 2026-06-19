@@ -4,6 +4,8 @@ Module.register("MMM-HormuzBanner", {
   defaults: {
     sourceUrl: "https://hormuzstraitmonitor.com/",
     updateInterval: 60 * 60 * 1000,
+    initialLoadDelay: 5 * 1000,
+    fetchEnabled: true,
     title: "HORMUZ",
     labels: {
       status: "Status",
@@ -24,9 +26,19 @@ Module.register("MMM-HormuzBanner", {
     this.data = null;
     this.error = null;
     this.timer = null;
+    this.initialLoadTimer = null;
 
-    this.sendSocketNotification("HORMUZ_CONFIG", this.config);
-    this.scheduleUpdate();
+    if (this.config.fetchEnabled === false) {
+      this.loaded = true;
+      this.data = {
+        status: "Unknown",
+        passed24h: "Unknown",
+        waiting: "Unknown"
+      };
+      return;
+    }
+
+    this.scheduleInitialLoad();
   },
 
   getStyles: function () {
@@ -44,6 +56,20 @@ Module.register("MMM-HormuzBanner", {
     this.timer = setInterval(function () {
       self.sendSocketNotification("HORMUZ_REFRESH");
     }, interval);
+  },
+
+  scheduleInitialLoad: function () {
+    var self = this;
+    var delay = Math.max(Number(this.config.initialLoadDelay) || this.defaults.initialLoadDelay, 0);
+
+    if (this.initialLoadTimer) {
+      clearTimeout(this.initialLoadTimer);
+    }
+
+    this.initialLoadTimer = setTimeout(function () {
+      self.sendSocketNotification("HORMUZ_CONFIG", self.config);
+      self.scheduleUpdate();
+    }, delay);
   },
 
   socketNotificationReceived: function (notification, payload) {

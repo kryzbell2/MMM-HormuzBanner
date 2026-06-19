@@ -13,6 +13,11 @@ module.exports = NodeHelper.create({
   socketNotificationReceived: function (notification, payload) {
     if (notification === "HORMUZ_CONFIG") {
       this.config = this.cloneConfig(payload);
+
+      if (this.config.fetchEnabled === false) {
+        return;
+      }
+
       this.fetchStatus();
     }
 
@@ -143,8 +148,8 @@ module.exports = NodeHelper.create({
 
   htmlToText: function (html) {
     return String(html)
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, " ")
-      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, " ")
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
       .replace(/<[^>]+>/g, " ")
       .replace(/&nbsp;/gi, " ")
       .replace(/&amp;/gi, "&")

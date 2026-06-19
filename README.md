@@ -36,6 +36,8 @@ Add the module to `config/config.js`:
   config: {
     sourceUrl: "https://hormuzstraitmonitor.com/",
     updateInterval: 60 * 60 * 1000,
+    initialLoadDelay: 5 * 1000,
+    fetchEnabled: true,
     title: "HORMUZ",
     labels: {
       status: "Status",
@@ -59,6 +61,8 @@ Add the module to `config/config.js`:
 | --- | --- | --- |
 | `sourceUrl` | `"https://hormuzstraitmonitor.com/"` | Page to fetch from the Node helper. |
 | `updateInterval` | `60 * 60 * 1000` | Refresh interval in milliseconds. A 60 minute interval is recommended to avoid unnecessary scraping. |
+| `initialLoadDelay` | `5 * 1000` | Delay before the first server-side fetch so MagicMirror can render the UI first. |
+| `fetchEnabled` | `true` | Set to `false` to disable fetching for isolation testing. |
 | `title` | `"HORMUZ"` | Banner title shown before the status fields. |
 | `labels` | See example | Custom labels for `passed24h`, `waiting`, and optional `updated`. |
 | `show` | See example | Toggle visibility for `status`, `passed24h`, `waiting`, and `updated`. |
