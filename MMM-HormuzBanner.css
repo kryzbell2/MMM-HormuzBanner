@@ -1,55 +1,44 @@
-.MMM-HormuzBanner {
-  margin-bottom: 0;
-}
-
-.MMM-HormuzBanner .module-content {
-  max-height: 24px;
-  overflow: hidden;
-}
-
-.mmm-hormuz-banner {
-  box-sizing: border-box;
-  display: block;
-  max-width: calc(100vw - 120px);
-  height: 24px;
-  padding: 0 10px;
+.mmm-hormuz {
+  min-width: 190px;
+  max-width: 260px;
   color: #fff;
-  font-size: 16px;
-  line-height: 24px;
-  letter-spacing: 0;
-  text-align: center;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.mmm-hormuz .hormuz-title {
+  margin-bottom: 3px;
   text-transform: uppercase;
+}
+
+.mmm-hormuz .hormuz-current {
+  margin-bottom: 6px;
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.mmm-hormuz .hormuz-details {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mmm-hormuz .hormuz-details td {
+  padding: 1px 0;
+}
+
+.mmm-hormuz .hormuz-label {
+  padding-right: 14px;
+  text-align: left;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.mmm-hormuz-banner .hormuz-title {
-  font-weight: 700;
-}
-
-.mmm-hormuz-banner .hormuz-segment {
-  display: inline;
+.mmm-hormuz .hormuz-value {
+  text-align: right;
   white-space: nowrap;
 }
 
-.mmm-hormuz-banner .hormuz-label {
-  margin-right: 3px;
-}
-
-.mmm-hormuz-banner .hormuz-value {
-  font-weight: 600;
-}
-
-.mmm-hormuz-banner .hormuz-separator {
-  display: inline-block;
-  margin: 0 10px;
-}
-
-@media (max-width: 520px) {
-  .mmm-hormuz-banner {
-    max-width: calc(100vw - 40px);
-    font-size: 14px;
-    text-align: left;
-  }
+.mmm-hormuz .hormuz-status {
+  margin-top: 4px;
 }

@@ -4,7 +4,6 @@ Module.register("MMM-HormuzBanner", {
   defaults: {
     sourceUrl: "https://hormuzstraitmonitor.com/",
     updateInterval: 60 * 60 * 1000,
-    initialLoadDelay: 5 * 1000,
     fetchEnabled: true,
     title: "HORMUZ",
     labels: {
@@ -26,7 +25,6 @@ Module.register("MMM-HormuzBanner", {
     this.data = null;
     this.error = null;
     this.timer = null;
-    this.initialLoadTimer = null;
 
     if (this.config.fetchEnabled === false) {
       this.loaded = true;
@@ -38,7 +36,8 @@ Module.register("MMM-HormuzBanner", {
       return;
     }
 
-    this.scheduleInitialLoad();
+    this.sendSocketNotification("HORMUZ_CONFIG", this.config);
+    this.scheduleUpdate();
   },
 
   getStyles: function () {
@@ -56,20 +55,6 @@ Module.register("MMM-HormuzBanner", {
     this.timer = setInterval(function () {
       self.sendSocketNotification("HORMUZ_REFRESH");
     }, interval);
-  },
-
-  scheduleInitialLoad: function () {
-    var self = this;
-    var delay = Math.max(Number(this.config.initialLoadDelay) || this.defaults.initialLoadDelay, 0);
-
-    if (this.initialLoadTimer) {
-      clearTimeout(this.initialLoadTimer);
-    }
-
-    this.initialLoadTimer = setTimeout(function () {
-      self.sendSocketNotification("HORMUZ_CONFIG", self.config);
-      self.scheduleUpdate();
-    }, delay);
   },
 
   socketNotificationReceived: function (notification, payload) {
@@ -90,99 +75,84 @@ Module.register("MMM-HormuzBanner", {
 
   getDom: function () {
     var wrapper = document.createElement("div");
-    wrapper.className = "mmm-hormuz-banner";
+    wrapper.className = "mmm-hormuz";
 
-    var title = document.createElement("span");
-    title.className = "hormuz-title bright";
-    title.innerHTML = this.escapeHtml(this.config.title || this.defaults.title) + ":";
+    var title = document.createElement("div");
+    title.className = "hormuz-title small dimmed";
+    title.innerHTML = this.escapeHtml(this.config.title || this.defaults.title);
     wrapper.appendChild(title);
 
     if (!this.loaded) {
-      wrapper.appendChild(this.makeSegment("Loading"));
+      wrapper.appendChild(this.makeStatus("Loading..."));
       return wrapper;
     }
 
     if (this.error) {
-      wrapper.appendChild(this.makeSegment("unavailable"));
+      wrapper.appendChild(this.makeStatus("unavailable"));
       return wrapper;
     }
 
-    var segments = this.getVisibleSegments();
-
-    for (var i = 0; i < segments.length; i += 1) {
-      if (i > 0) {
-        wrapper.appendChild(this.makeSeparator());
-      }
-
-      wrapper.appendChild(this.makeSegment(segments[i].value, segments[i].label));
+    if (this.isVisible("status")) {
+      var status = document.createElement("div");
+      status.className = "hormuz-current bright";
+      status.innerHTML = this.escapeHtml(this.formatValue((this.data || {}).status));
+      wrapper.appendChild(status);
     }
 
-    if (segments.length === 0) {
-      wrapper.appendChild(this.makeSegment("No rows enabled"));
+    var table = this.makeDetailsTable();
+
+    if (table.childNodes.length > 0) {
+      wrapper.appendChild(table);
+    }
+
+    if (!this.isVisible("status") && table.childNodes.length === 0) {
+      wrapper.appendChild(this.makeStatus("No rows enabled"));
     }
 
     return wrapper;
   },
 
-  getVisibleSegments: function () {
+  makeDetailsTable: function () {
     var values = this.data || {};
-    var segments = [];
-
-    if (this.isVisible("status")) {
-      segments.push({
-        label: null,
-        value: this.formatValue(values.status)
-      });
-    }
+    var table = document.createElement("table");
+    table.className = "hormuz-details small";
 
     if (this.isVisible("passed24h")) {
-      segments.push({
-        label: this.getLabel("passed24h"),
-        value: this.formatValue(values.passed24h)
-      });
+      table.appendChild(this.makeRow(this.getLabel("passed24h"), this.formatValue(values.passed24h)));
     }
 
     if (this.isVisible("waiting")) {
-      segments.push({
-        label: this.getLabel("waiting"),
-        value: this.formatValue(values.waiting)
-      });
+      table.appendChild(this.makeRow(this.getLabel("waiting"), this.formatValue(values.waiting)));
     }
 
     if (this.isVisible("updated")) {
-      segments.push({
-        label: this.getLabel("updated"),
-        value: this.formatUpdated(values.updatedAt)
-      });
+      table.appendChild(this.makeRow(this.getLabel("updated"), this.formatUpdated(values.updatedAt)));
     }
 
-    return segments;
+    return table;
   },
 
-  makeSegment: function (value, label) {
-    var segment = document.createElement("span");
-    segment.className = "hormuz-segment";
+  makeRow: function (labelText, valueText) {
+    var row = document.createElement("tr");
+    var label = document.createElement("td");
+    var value = document.createElement("td");
 
-    if (label) {
-      var segmentLabel = document.createElement("span");
-      segmentLabel.className = "hormuz-label dimmed";
-      segmentLabel.innerHTML = this.escapeHtml(label) + ": ";
-      segment.appendChild(segmentLabel);
-    }
+    label.className = "hormuz-label dimmed";
+    value.className = "hormuz-value bright";
+    label.innerHTML = this.escapeHtml(labelText);
+    value.innerHTML = this.escapeHtml(valueText);
 
-    var segmentValue = document.createElement("span");
-    segmentValue.className = "hormuz-value bright";
-    segmentValue.innerHTML = this.escapeHtml(value);
-    segment.appendChild(segmentValue);
+    row.appendChild(label);
+    row.appendChild(value);
 
-    return segment;
+    return row;
   },
 
-  makeSeparator: function () {
-    var separator = document.createElement("span");
-    separator.className = "hormuz-separator dimmed";
-    separator.innerHTML = "&middot;";
-    return separator;
+  makeStatus: function (message) {
+    var status = document.createElement("div");
+    status.className = "hormuz-status small bright";
+    status.innerHTML = this.escapeHtml(message);
+    return status;
   },
 
   getLabel: function (key) {

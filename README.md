@@ -1,11 +1,14 @@
 # MMM-HormuzBanner
 
-Compact MagicMirror top banner for Strait of Hormuz shipping status from [hormuzstraitmonitor.com](https://hormuzstraitmonitor.com/).
+Compact MagicMirror module for Strait of Hormuz shipping status from [hormuzstraitmonitor.com](https://hormuzstraitmonitor.com/).
 
-Target display:
+Typical display:
 
 ```text
-HORMUZ: OPEN · 24H PASSED: 150+ · WAITING: Unknown
+HORMUZ
+OPEN
+24H Passed     150+
+Waiting        Unknown
 ```
 
 ## Installation
@@ -32,11 +35,10 @@ Add the module to `config/config.js`:
 ```js
 {
   module: "MMM-HormuzBanner",
-  position: "top_bar",
+  position: "top_right",
   config: {
     sourceUrl: "https://hormuzstraitmonitor.com/",
     updateInterval: 60 * 60 * 1000,
-    initialLoadDelay: 5 * 1000,
     fetchEnabled: true,
     title: "HORMUZ",
     labels: {
@@ -61,7 +63,6 @@ Add the module to `config/config.js`:
 | --- | --- | --- |
 | `sourceUrl` | `"https://hormuzstraitmonitor.com/"` | Page to fetch from the Node helper. |
 | `updateInterval` | `60 * 60 * 1000` | Refresh interval in milliseconds. A 60 minute interval is recommended to avoid unnecessary scraping. |
-| `initialLoadDelay` | `5 * 1000` | Delay before the first server-side fetch so MagicMirror can render the UI first. |
 | `fetchEnabled` | `true` | Set to `false` to disable fetching for isolation testing. |
 | `title` | `"HORMUZ"` | Banner title shown before the status fields. |
 | `labels` | See example | Custom labels for `passed24h`, `waiting`, and optional `updated`. |
