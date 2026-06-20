@@ -6,27 +6,29 @@ const { URL } = require("url");
 
 module.exports = NodeHelper.create({
 	socketNotificationReceived: function (notification, payload) {
-		if (notification !== "MMM_HORMUZBANNER_FETCH_TEST") {
+		if (notification !== "MMM_HORMUZBANNER_FETCH") {
 			return;
 		}
 
-		this.fetchTest(payload && payload.sourceUrl);
+		this.fetchStatus(payload && payload.sourceUrl);
 	},
 
-	fetchTest: function (sourceUrl) {
+	fetchStatus: function (sourceUrl) {
 		this.fetchPage(sourceUrl || "https://hormuzstraitmonitor.com/")
 			.then((html) => {
-				this.sendSocketNotification("MMM_HORMUZBANNER_FETCH_TEST_RESULT", {
+				this.sendSocketNotification("MMM_HORMUZBANNER_DATA", {
 					...this.parseHormuzPage(html),
+					updated: new Date().toISOString(),
 					error: null
 				});
 			})
 			.catch((error) => {
-				console.error("MMM-HormuzBanner fetch test failed:", error.message);
-				this.sendSocketNotification("MMM_HORMUZBANNER_FETCH_TEST_RESULT", {
+				console.error("MMM-HormuzBanner fetch failed:", error.message);
+				this.sendSocketNotification("MMM_HORMUZBANNER_DATA", {
 					status: "Unknown",
 					passed24h: "Unknown",
 					waiting: "Unknown",
+					updated: new Date().toISOString(),
 					error: error.message
 				});
 			});

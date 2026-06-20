@@ -2,13 +2,13 @@
 
 MagicMirror module diagnostic checkpoint.
 
-This version intentionally tests server-side fetch plus defensive parsing:
+This version fetches and parses Strait of Hormuz shipping status server-side:
 
 ```text
 HORMUZ: <STATUS> · 24H PASSED: <COUNT> · WAITING: <COUNT>
 ```
 
-It has no timers and no CSS. Use this checkpoint to prove that `node_helper.js` can fetch and parse the source page without preventing later modules in `config.js` from loading.
+It includes a conservative refresh timer and no CSS. Use this checkpoint to prove that repeated updates and config options work without affecting later modules in `config.js`.
 
 ## Install
 
@@ -31,8 +31,20 @@ Add the module to `~/MagicMirror/config/config.js`:
 	position: "top_bar",
 	config: {
 		sourceUrl: "https://hormuzstraitmonitor.com/",
+		updateInterval: 60 * 60 * 1000,
 		title: "HORMUZ",
-		message: "TEST"
+		message: "Loading",
+		labels: {
+			passed24h: "24H PASSED",
+			waiting: "WAITING",
+			updated: "UPDATED"
+		},
+		show: {
+			status: true,
+			passed24h: true,
+			waiting: true,
+			updated: false
+		}
 	}
 }
 ```
@@ -42,8 +54,11 @@ Add the module to `~/MagicMirror/config/config.js`:
 | Option | Default | Description |
 | --- | --- | --- |
 | `sourceUrl` | `https://hormuzstraitmonitor.com/` | URL fetched once by `node_helper.js`. |
+| `updateInterval` | `60 * 60 * 1000` | Refresh interval in milliseconds. Values below 5 minutes are raised to 5 minutes. |
 | `title` | `HORMUZ` | Text before the colon. |
-| `message` | `TEST` | Temporary text shown before helper data arrives. |
+| `message` | `Loading` | Temporary text shown before helper data arrives. |
+| `labels` | See example | Custom labels for displayed fields. |
+| `show` | See example | Row visibility for `status`, `passed24h`, `waiting`, and `updated`. |
 
 ## Test Plan
 
@@ -51,7 +66,7 @@ Add the module to `~/MagicMirror/config/config.js`:
 2. Restart MagicMirror.
 3. Confirm that the Hormuz line displays parsed fields or `Unknown`.
 4. Confirm that modules listed after `MMM-HormuzBanner` also appear.
-5. If the mirror stops after this module, the problem is in parsing, not timers or CSS.
+5. If the mirror stops after this module, the problem is in repeated updates or config-driven rendering, not CSS.
 
 ## Test
 
