@@ -2,13 +2,13 @@
 
 MagicMirror module diagnostic checkpoint.
 
-This version intentionally renders only static text:
+This version intentionally tests only the MagicMirror socket path with hardcoded helper data:
 
 ```text
-HORMUZ: TEST
+HORMUZ: OPEN · 24H PASSED: 123 · WAITING: 4
 ```
 
-It has no `node_helper.js`, no network access, no timers, and no CSS. Use this checkpoint to prove that the module can be loaded without preventing later modules in `config.js` from loading.
+It has no network access, no timers, no scraping, and no CSS. Use this checkpoint to prove that `node_helper.js` and socket notifications can run without preventing later modules in `config.js` from loading.
 
 ## Install
 
@@ -41,15 +41,15 @@ Add the module to `~/MagicMirror/config/config.js`:
 | Option | Default | Description |
 | --- | --- | --- |
 | `title` | `HORMUZ` | Text before the colon. |
-| `message` | `TEST` | Text after the colon. |
+| `message` | `TEST` | Temporary text shown before helper data arrives. |
 
 ## Test Plan
 
 1. Put this module before several known-good modules in `config.js`.
 2. Restart MagicMirror.
-3. Confirm that `HORMUZ: TEST` appears.
+3. Confirm that `HORMUZ: OPEN · 24H PASSED: 123 · WAITING: 4` appears.
 4. Confirm that modules listed after `MMM-HormuzBanner` also appear.
-5. If the mirror still stops after this module, the problem is likely the module path, config syntax, file ownership, stale deployed files, or a MagicMirror runtime error outside the scraper/helper code.
+5. If the mirror stops after this module, the problem is in helper loading or socket communication, not network scraping.
 
 ## Test
 
@@ -57,5 +57,6 @@ From the module directory, run:
 
 ```bash
 node --check MMM-HormuzBanner.js
+node --check node_helper.js
 git diff --check
 ```
