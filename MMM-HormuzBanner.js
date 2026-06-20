@@ -22,7 +22,8 @@ Module.register("MMM-HormuzBanner", {
 			waiting: true,
 			updated: true
 		},
-		separator: " · "
+		fullWidth: false,
+		separator: " \u00b7 "
 	},
 
 	start: function () {
@@ -44,6 +45,9 @@ Module.register("MMM-HormuzBanner", {
 	getDom: function () {
 		var wrapper = document.createElement("div");
 		wrapper.className = "mmm-hormuz-banner";
+		if (this.config.fullWidth) {
+			wrapper.className += " mmm-hormuz-banner-full-width";
+		}
 
 		var title = document.createElement("span");
 		title.className = "mmm-hormuz-banner-title";
@@ -136,7 +140,7 @@ Module.register("MMM-HormuzBanner", {
 			sourceUrl: this.config.sourceUrl
 		});
 
-		var interval = Math.max(5 * 60 * 1000, Number(this.config.updateInterval) || this.defaults.updateInterval);
+		var interval = Math.max(5 * 60 * 1000, Number(this.config.updateInterval) || 60 * 60 * 1000);
 		setTimeout(this.scheduleUpdate.bind(this), interval);
 	},
 

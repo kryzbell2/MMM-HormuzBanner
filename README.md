@@ -57,7 +57,10 @@ Add the module to `~/MagicMirror/config/config.js`:
 | `labels` | See example | Custom labels for parsed fields. |
 | `show` | See example | Controls whether `status`, `passed24h`, `waiting`, and `updated` are shown. |
 | `showLabels` | See defaults | Controls label visibility per field. By default, numeric fields are labeled and the status is not. A boolean is also accepted. |
+| `fullWidth` | `false` | Allows the banner text to fill its MagicMirror region. Prefer `position: "top_bar"` for a true full-width banner. |
 | `separator` | ` · ` | Separator between visible fields. |
+
+For a mirror-wide banner, use `position: "top_bar"`. The module CSS intentionally avoids `position: fixed`, `100vw`, and opaque backgrounds so it does not cover or suppress modules loaded after it.
 
 ## Scraping Notes
 
