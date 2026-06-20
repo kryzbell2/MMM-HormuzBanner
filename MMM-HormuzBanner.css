@@ -20,6 +20,18 @@
 	font-weight: 400;
 }
 
+.mmm-hormuz-banner-status-open {
+	color: #4ade80;
+}
+
+.mmm-hormuz-banner-status-closed {
+	color: #f87171;
+}
+
+.mmm-hormuz-banner-status-restricted {
+	color: #fb923c;
+}
+
 .region.top.bar .mmm-hormuz-banner {
 	width: 100%;
 }

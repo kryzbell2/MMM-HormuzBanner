@@ -38,11 +38,24 @@ Module.register("MMM-HormuzBanner", {
 		wrapper.appendChild(title);
 
 		var value = document.createElement("span");
-		value.className = "mmm-hormuz-banner-value";
+		value.className = "mmm-hormuz-banner-value " + this.getStatusClass();
 		value.textContent = this.getMessage();
 		wrapper.appendChild(value);
 
 		return wrapper;
+	},
+
+	getStatusClass: function () {
+		if (!this.payload || this.payload.error) {
+			return "";
+		}
+
+		var status = String(this.payload.status || "").toLowerCase();
+		if (status === "open" || status === "closed" || status === "restricted") {
+			return "mmm-hormuz-banner-status-" + status;
+		}
+
+		return "";
 	},
 
 	getMessage: function () {

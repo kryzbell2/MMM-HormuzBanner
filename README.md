@@ -72,6 +72,8 @@ Add the module to `~/MagicMirror/config/config.js`:
 
 The stylesheet intentionally avoids `position: fixed`, `position: absolute`, `100vw`, opaque backgrounds, and viewport-height rules. For a full-width banner, use `position: "top_bar"` in MagicMirror config instead of forcing layout in CSS.
 
+Status text is colored by parsed state: `OPEN` is green, `CLOSED` is red, and `RESTRICTED` is orange.
+
 ## Test
 
 From the module directory, run:
