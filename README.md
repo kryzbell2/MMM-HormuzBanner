@@ -2,13 +2,13 @@
 
 MagicMirror module diagnostic checkpoint.
 
-This version intentionally tests only a single server-side fetch:
+This version intentionally tests server-side fetch plus defensive parsing:
 
 ```text
-HORMUZ: fetched
+HORMUZ: <STATUS> · 24H PASSED: <COUNT> · WAITING: <COUNT>
 ```
 
-It has no timers, no scraping, and no CSS. Use this checkpoint to prove that `node_helper.js` can fetch the source page without preventing later modules in `config.js` from loading.
+It has no timers and no CSS. Use this checkpoint to prove that `node_helper.js` can fetch and parse the source page without preventing later modules in `config.js` from loading.
 
 ## Install
 
@@ -49,9 +49,9 @@ Add the module to `~/MagicMirror/config/config.js`:
 
 1. Put this module before several known-good modules in `config.js`.
 2. Restart MagicMirror.
-3. Confirm that `HORMUZ: fetched` appears.
+3. Confirm that the Hormuz line displays parsed fields or `Unknown`.
 4. Confirm that modules listed after `MMM-HormuzBanner` also appear.
-5. If the mirror stops after this module, the problem is in helper-side network fetching, not scraping or CSS.
+5. If the mirror stops after this module, the problem is in parsing, not timers or CSS.
 
 ## Test
 

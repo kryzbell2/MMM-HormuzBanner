@@ -25,7 +25,13 @@ Module.register("MMM-HormuzBanner", {
 			return this.config.message;
 		}
 
-		return this.payload.message || "fetch failed";
+		if (this.payload.error) {
+			return "unavailable";
+		}
+
+		return this.payload.status +
+			" \u00b7 24H PASSED: " + this.payload.passed24h +
+			" \u00b7 WAITING: " + this.payload.waiting;
 	},
 
 	socketNotificationReceived: function (notification, payload) {
