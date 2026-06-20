@@ -74,6 +74,8 @@ The stylesheet intentionally avoids `position: fixed`, `position: absolute`, `10
 
 Status text is colored by parsed state: `OPEN` is green, `CLOSED` is red, and `RESTRICTED` is orange.
 
+The parser treats explicit live metrics as authoritative. For example, `Ships transiting: Near zero (normal: ~60/day)` displays as `0` instead of the normal baseline, and `Vessels Waiting: N/A` displays as `N/A` instead of falling back to stranded vessels.
+
 ## Test
 
 From the module directory, run:

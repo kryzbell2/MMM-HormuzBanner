@@ -116,6 +116,14 @@ module.exports = NodeHelper.create({
 	},
 
 	extractPassed24h: function (text) {
+		const directTransit = this.firstMatch(text, [
+			/(?:ships?\s+transiting|transits?)\s*[:=]\s*(near zero|zero|n\/a|\d+\+?)/i
+		], this.normalizeTransitMetric);
+
+		if (directTransit) {
+			return directTransit;
+		}
+
 		return this.firstMatch(text, [
 			/(?:last|past)\s+24\s*(?:hours?|hrs?).{0,80}?(?:ships?|vessels?)\s+(?:transiting|passed|crossings?)[^0-9a-z+]*(\d+|near zero|zero|[0-9]+\+)/i,
 			/(?:ships?|vessels?)\s+(?:transiting|passed|crossings?).{0,80}?(?:last|past)\s+24\s*(?:hours?|hrs?)[^0-9a-z+]*(\d+|near zero|zero|[0-9]+\+)/i,
@@ -126,6 +134,14 @@ module.exports = NodeHelper.create({
 	},
 
 	extractWaiting: function (text) {
+		const directWaiting = this.firstMatch(text, [
+			/(?:vessels?\s+waiting|waiting\s+vessels?)\s*[:=]\s*(n\/a|none|unknown|near zero|zero|\d+\+?)/i
+		], this.normalizeAvailabilityMetric);
+
+		if (directWaiting) {
+			return directWaiting;
+		}
+
 		return this.firstMatch(text, [
 			/(?:waiting)\s+vessels?[^0-9]*(\d+|[0-9]+\+)/i,
 			/(?:stranded)\s+vessels?[^0-9]*(\d+|[0-9]+\+)/i,
@@ -155,6 +171,46 @@ module.exports = NodeHelper.create({
 
 	normalizeMetric: function (value) {
 		const metric = String(value).trim();
+
+		if (/^near zero$/i.test(metric)) {
+			return "Near zero";
+		}
+
+		if (/^zero$/i.test(metric)) {
+			return "0";
+		}
+
+		return metric;
+	},
+
+	normalizeTransitMetric: function (value) {
+		const metric = String(value).trim();
+
+		if (/^(near zero|zero)$/i.test(metric)) {
+			return "0";
+		}
+
+		if (/^n\/a$/i.test(metric)) {
+			return "N/A";
+		}
+
+		return metric;
+	},
+
+	normalizeAvailabilityMetric: function (value) {
+		const metric = String(value).trim();
+
+		if (/^n\/a$/i.test(metric)) {
+			return "N/A";
+		}
+
+		if (/^none$/i.test(metric)) {
+			return "None";
+		}
+
+		if (/^unknown$/i.test(metric)) {
+			return "Unknown";
+		}
 
 		if (/^near zero$/i.test(metric)) {
 			return "Near zero";
