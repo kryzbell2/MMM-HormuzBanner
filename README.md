@@ -2,13 +2,13 @@
 
 MagicMirror module diagnostic checkpoint.
 
-This version fetches and parses Strait of Hormuz shipping status server-side:
+This module fetches and parses Strait of Hormuz shipping status server-side:
 
 ```text
 HORMUZ: <STATUS> · 24H PASSED: <COUNT> · WAITING: <COUNT>
 ```
 
-It includes a conservative refresh timer and no CSS. Use this checkpoint to prove that repeated updates and config options work without affecting later modules in `config.js`.
+It includes a conservative refresh timer and minimal CSS that stays in MagicMirror's normal layout flow.
 
 ## Install
 
@@ -67,6 +67,10 @@ Add the module to `~/MagicMirror/config/config.js`:
 3. Confirm that the Hormuz line displays parsed fields or `Unknown`.
 4. Confirm that modules listed after `MMM-HormuzBanner` also appear.
 5. If the mirror stops after this module, the problem is in repeated updates or config-driven rendering, not CSS.
+
+## CSS Safety Notes
+
+The stylesheet intentionally avoids `position: fixed`, `position: absolute`, `100vw`, opaque backgrounds, and viewport-height rules. For a full-width banner, use `position: "top_bar"` in MagicMirror config instead of forcing layout in CSS.
 
 ## Test
 

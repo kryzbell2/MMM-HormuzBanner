@@ -1,0 +1,25 @@
+.mmm-hormuz-banner {
+	box-sizing: border-box;
+	display: block;
+	max-width: 100%;
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	line-height: 1.25;
+	text-align: center;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.mmm-hormuz-banner-title {
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.mmm-hormuz-banner-value {
+	font-weight: 400;
+}
+
+.region.top.bar .mmm-hormuz-banner {
+	width: 100%;
+}

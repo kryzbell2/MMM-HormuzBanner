@@ -24,10 +24,24 @@ Module.register("MMM-HormuzBanner", {
 		this.fetchData();
 	},
 
+	getStyles: function () {
+		return ["MMM-HormuzBanner.css"];
+	},
+
 	getDom: function () {
 		var wrapper = document.createElement("div");
-		wrapper.className = "small bright";
-		wrapper.textContent = this.config.title + ": " + this.getMessage();
+		wrapper.className = "mmm-hormuz-banner small bright";
+
+		var title = document.createElement("span");
+		title.className = "mmm-hormuz-banner-title";
+		title.textContent = this.config.title + ": ";
+		wrapper.appendChild(title);
+
+		var value = document.createElement("span");
+		value.className = "mmm-hormuz-banner-value";
+		value.textContent = this.getMessage();
+		wrapper.appendChild(value);
+
 		return wrapper;
 	},
 
