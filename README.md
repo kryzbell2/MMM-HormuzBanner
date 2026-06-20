@@ -2,13 +2,13 @@
 
 MagicMirror module diagnostic checkpoint.
 
-This version intentionally tests only the MagicMirror socket path with hardcoded helper data:
+This version intentionally tests only a single server-side fetch:
 
 ```text
-HORMUZ: OPEN · 24H PASSED: 123 · WAITING: 4
+HORMUZ: fetched
 ```
 
-It has no network access, no timers, no scraping, and no CSS. Use this checkpoint to prove that `node_helper.js` and socket notifications can run without preventing later modules in `config.js` from loading.
+It has no timers, no scraping, and no CSS. Use this checkpoint to prove that `node_helper.js` can fetch the source page without preventing later modules in `config.js` from loading.
 
 ## Install
 
@@ -30,6 +30,7 @@ Add the module to `~/MagicMirror/config/config.js`:
 	module: "MMM-HormuzBanner",
 	position: "top_bar",
 	config: {
+		sourceUrl: "https://hormuzstraitmonitor.com/",
 		title: "HORMUZ",
 		message: "TEST"
 	}
@@ -40,6 +41,7 @@ Add the module to `~/MagicMirror/config/config.js`:
 
 | Option | Default | Description |
 | --- | --- | --- |
+| `sourceUrl` | `https://hormuzstraitmonitor.com/` | URL fetched once by `node_helper.js`. |
 | `title` | `HORMUZ` | Text before the colon. |
 | `message` | `TEST` | Temporary text shown before helper data arrives. |
 
@@ -47,9 +49,9 @@ Add the module to `~/MagicMirror/config/config.js`:
 
 1. Put this module before several known-good modules in `config.js`.
 2. Restart MagicMirror.
-3. Confirm that `HORMUZ: OPEN · 24H PASSED: 123 · WAITING: 4` appears.
+3. Confirm that `HORMUZ: fetched` appears.
 4. Confirm that modules listed after `MMM-HormuzBanner` also appear.
-5. If the mirror stops after this module, the problem is in helper loading or socket communication, not network scraping.
+5. If the mirror stops after this module, the problem is in helper-side network fetching, not scraping or CSS.
 
 ## Test
 

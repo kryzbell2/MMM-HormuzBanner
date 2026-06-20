@@ -1,13 +1,16 @@
 /* MagicMirror2 Module: MMM-HormuzBanner */
 Module.register("MMM-HormuzBanner", {
 	defaults: {
+		sourceUrl: "https://hormuzstraitmonitor.com/",
 		title: "HORMUZ",
 		message: "TEST"
 	},
 
 	start: function () {
 		this.payload = null;
-		this.sendSocketNotification("MMM_HORMUZBANNER_TEST");
+		this.sendSocketNotification("MMM_HORMUZBANNER_FETCH_TEST", {
+			sourceUrl: this.config.sourceUrl
+		});
 	},
 
 	getDom: function () {
@@ -22,13 +25,11 @@ Module.register("MMM-HormuzBanner", {
 			return this.config.message;
 		}
 
-		return this.payload.status +
-			" \u00b7 24H PASSED: " + this.payload.passed24h +
-			" \u00b7 WAITING: " + this.payload.waiting;
+		return this.payload.message || "fetch failed";
 	},
 
 	socketNotificationReceived: function (notification, payload) {
-		if (notification !== "MMM_HORMUZBANNER_TEST_RESULT") {
+		if (notification !== "MMM_HORMUZBANNER_FETCH_TEST_RESULT") {
 			return;
 		}
 
