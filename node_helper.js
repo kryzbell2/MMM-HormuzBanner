@@ -14,11 +14,19 @@ module.exports = NodeHelper.create({
 	},
 
 	fetchStatus: function (sourceUrl) {
-		this.fetchPage(sourceUrl || "https://hormuzstraitmonitor.com/")
-			.then((html) => {
+		const fetchedAt = new Date().toISOString();
+
+		this.fetchDashboardApi()
+			.then((dashboard) => this.parseDashboardApi(dashboard))
+			.catch((apiError) => {
+				console.error("MMM-HormuzBanner API fetch failed, falling back to homepage:", apiError.message);
+				return this.fetchPage(sourceUrl || "https://hormuzstraitmonitor.com/")
+					.then((html) => this.parseHormuzPage(html));
+			})
+			.then((payload) => {
 				this.sendSocketNotification("MMM_HORMUZBANNER_DATA", {
-					...this.parseHormuzPage(html),
-					updated: new Date().toISOString(),
+					...payload,
+					updated: fetchedAt,
 					error: null
 				});
 			})
@@ -28,9 +36,20 @@ module.exports = NodeHelper.create({
 					status: "Unknown",
 					passed24h: "Unknown",
 					waiting: "Unknown",
-					updated: new Date().toISOString(),
+					updated: fetchedAt,
 					error: error.message
 				});
+			});
+	},
+
+	fetchDashboardApi: function () {
+		return this.fetchPage("https://hormuzstraitmonitor.com/api/dashboard")
+			.then((body) => {
+				try {
+					return JSON.parse(body);
+				} catch (error) {
+					throw new Error("Invalid dashboard JSON");
+				}
 			});
 	},
 
@@ -88,6 +107,29 @@ module.exports = NodeHelper.create({
 			status: this.extractStatus(text) || "Unknown",
 			passed24h: this.extractPassed24h(text) || "Unknown",
 			waiting: this.extractWaiting(text) || "Unknown"
+		};
+	},
+
+	parseDashboardApi: function (dashboard) {
+		if (!dashboard || dashboard.success !== true || !dashboard.data) {
+			throw new Error("Unexpected dashboard API response");
+		}
+
+		const data = dashboard.data;
+		if (!data.straitStatus || !data.shipCount || !data.strandedVessels) {
+			throw new Error("Missing dashboard API data");
+		}
+
+		if (typeof data.straitStatus.status !== "string" || data.shipCount.last24h === undefined || data.strandedVessels.total === undefined) {
+			throw new Error("Missing dashboard API metrics");
+		}
+
+		const waiting = Number(data.strandedVessels.total) === 0 ? "Data not available" : String(data.strandedVessels.total);
+
+		return {
+			status: this.normalizeStatus(data.straitStatus.status),
+			passed24h: String(data.shipCount.last24h),
+			waiting: waiting
 		};
 	},
 
