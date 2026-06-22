@@ -4,6 +4,9 @@ var http = require("http");
 var https = require("https");
 var url = require("url");
 
+var DEFAULT_SOURCE_URL = "https://hormuzstraitmonitor.com/";
+var DEFAULT_API_URL = "https://hormuzstraitmonitor.com/api/dashboard";
+
 module.exports = NodeHelper.create({
   start: function () {
     this.config = null;
@@ -42,24 +45,90 @@ module.exports = NodeHelper.create({
 
     this.isFetching = true;
 
-    this.fetchText(this.config.sourceUrl || "https://hormuzstraitmonitor.com/")
-      .then(function (html) {
-        var parsed = self.parsePage(html);
-        parsed.sourceUrl = self.config.sourceUrl || "https://hormuzstraitmonitor.com/";
+    this.fetchApiStatus(this.config.apiUrl || DEFAULT_API_URL)
+      .then(function (parsed) {
+        parsed.sourceUrl = self.config.apiUrl || DEFAULT_API_URL;
         parsed.updatedAt = new Date().toISOString();
+        Log.info("MMM-HormuzBanner: API fetch succeeded");
         self.sendSocketNotification(self.getNotificationName("DATA"), parsed);
         self.isFetching = false;
       })
+      .catch(function (apiError) {
+        Log.warn("MMM-HormuzBanner: API fetch failed, falling back to homepage scraper: " + apiError.message);
+        return self.fetchText(self.config.sourceUrl || DEFAULT_SOURCE_URL)
+          .then(function (html) {
+            var parsed = self.parsePage(html);
+            parsed.sourceUrl = self.config.sourceUrl || DEFAULT_SOURCE_URL;
+            parsed.updatedAt = new Date().toISOString();
+            Log.info("MMM-HormuzBanner: Homepage scraper fallback succeeded");
+            self.sendSocketNotification(self.getNotificationName("DATA"), parsed);
+            self.isFetching = false;
+          });
+      })
       .catch(function (error) {
-        Log.error("MMM-HormuzBanner: " + error.message);
+        Log.error("MMM-HormuzBanner: total fetch failure: " + error.message);
         self.sendError(error.message);
         self.isFetching = false;
       });
   },
 
-  fetchText: function (sourceUrl, redirectCount) {
+  fetchApiStatus: function (apiUrl) {
     var self = this;
+
+    return this.fetchText(apiUrl, {
+      "Accept": "application/json"
+    }).then(function (body) {
+      return self.parseDashboardApi(body);
+    });
+  },
+
+  parseDashboardApi: function (body) {
+    var payload;
+
+    try {
+      payload = JSON.parse(body);
+    } catch (error) {
+      throw new Error("Hormuz API returned non-JSON");
+    }
+
+    return this.mapDashboardApi(payload);
+  },
+
+  mapDashboardApi: function (payload) {
+    var data = payload && payload.data;
+    var status = data && data.straitStatus && data.straitStatus.status;
+    var passed24h = data && data.shipCount && data.shipCount.last24h;
+    var waiting = data && data.strandedVessels && data.strandedVessels.total;
+    var waitingNumber = Number(waiting);
+
+    if (typeof status !== "string" || status.trim() === "") {
+      throw new Error("Hormuz API missing straitStatus.status");
+    }
+
+    if (passed24h === null || passed24h === undefined || passed24h === "") {
+      throw new Error("Hormuz API missing shipCount.last24h");
+    }
+
+    if (waiting === null || waiting === undefined || waiting === "" || Number.isNaN(waitingNumber)) {
+      throw new Error("Hormuz API missing strandedVessels.total");
+    }
+
+    return {
+      status: status.toUpperCase(),
+      passed24h: String(passed24h),
+      waiting: waitingNumber === 0 ? "Data not available" : String(waiting)
+    };
+  },
+
+  fetchText: function (sourceUrl, options, redirectCount) {
+    var self = this;
+    var requestOptions = options || {};
     var redirects = redirectCount || 0;
+
+    if (typeof options === "number") {
+      redirects = options;
+      requestOptions = {};
+    }
 
     return new Promise(function (resolve, reject) {
       var parsedUrl;
@@ -84,7 +153,7 @@ module.exports = NodeHelper.create({
         path: parsedUrl.path,
         headers: {
           "User-Agent": "MMM-HormuzBanner/1.0 (+https://magicmirror.builders/)",
-          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+          "Accept": requestOptions.Accept || "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
         }
       }, function (response) {
         var body = "";
@@ -97,7 +166,7 @@ module.exports = NodeHelper.create({
             return;
           }
 
-          resolve(self.fetchText(url.resolve(sourceUrl, response.headers.location), redirects + 1));
+          resolve(self.fetchText(url.resolve(sourceUrl, response.headers.location), requestOptions, redirects + 1));
           return;
         }
 
